@@ -8,14 +8,33 @@ from petpetgif import petpet as petpetgif
 from PIL import Image
 from dotenv import load_dotenv
 import os
+import os.path
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from google.oauth2 import service_account
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = commands.Bot(command_prefix="-", intents=discord.Intents.all())
 
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+credentials = service_account.Credentials.from_service_account_file("google api creds.json", scopes=SCOPES)
+googleService = build("sheets", "v4", credentials=credentials)
+
 async def main():
     async with bot:
         await bot.start(BOT_TOKEN)
+
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+    if message.content.lower().startswith("suggestion"):
+        await logSuggestion(message)
+    await bot.process_commands(message)
     
 @bot.event
 async def on_ready():
@@ -156,6 +175,19 @@ async def getusers(ctx, role: discord.Role, role2: discord.Role):
     print(s1.difference(s2))
     print("users in", role2.name, "but not", role.name)
     print(s2.difference(s1))
+
+async def logSuggestion(message):
+    if message.channel.id == 1226401535374655490:
+        text = message.author.name
+        text += ": "
+        text += message.content
+        for a in message.attachments:
+            text += a.url
+        result = googleService.spreadsheets().values().append(
+            range="Sheet1!A1", spreadsheetId="", valueInputOption="RAW", body={"values":[[text]]}
+        ).execute()
+        if result['updates']['updatedCells'] > 0:
+            await message.channel.send("suggestion noted")
 
 if __name__ == "__main__":
     asyncio.run(main())
