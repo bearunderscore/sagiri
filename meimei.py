@@ -55,7 +55,7 @@ async def now_live():
 
 @bot.command()
 async def schedule(ctx):
-    await ctx.send(content="Meimei's weekly schedule!", file=discord.File("weeklyTWITTER.png"))
+    await ctx.send(content="Meimei's weekly schedule!", file=discord.File("schedule.png"))
 
 @bot.command()
 async def info(ctx):
@@ -74,7 +74,6 @@ async def info(ctx):
     schedule_file2 = discord.File("schedule.png", filename="schedule2.png")
     embed2.set_image(url="attachment://schedule2.png")
 
-    #await ctx.send(file=schedule_file1, embed=embed1)
     await ctx.send(file=schedule_file2, embed=embed2)
 
 def getAvatarUrl(member):
@@ -154,8 +153,10 @@ async def getusers(ctx, role: discord.Role, role2: discord.Role):
     s2 = set([m.name for m in role2.members])
     print("users in", role.name, "but not", role2.name)
     print(s1.difference(s2))
+    print(len(s1.difference(s2)))
     print("users in", role2.name, "but not", role.name)
     print(s2.difference(s1))
+    print(len(s2.difference(s1)))
 
 if __name__ == "__main__":
     asyncio.run(main())
