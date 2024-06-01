@@ -23,6 +23,7 @@ bot = commands.Bot(command_prefix="-", intents=discord.Intents.all())
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 credentials = service_account.Credentials.from_service_account_file("google api creds.json", scopes=SCOPES)
 googleService = build("sheets", "v4", credentials=credentials)
+SUGGESTION_CHANNEL = int(os.getenv("SUGGESTION_CHANNEL"))
 
 async def main():
     async with bot:
@@ -177,7 +178,7 @@ async def getusers(ctx, role: discord.Role, role2: discord.Role):
     print(s2.difference(s1))
 
 async def logSuggestion(message):
-    if message.channel.id == 1226401535374655490:
+    if message.channel.id == SUGGESTION_CHANNEL:
         text = message.author.name
         text += ": "
         text += message.content
