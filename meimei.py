@@ -23,7 +23,11 @@ bot = commands.Bot(command_prefix="-", intents=discord.Intents.all())
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
 credentials = service_account.Credentials.from_service_account_file("google api creds.json", scopes=SCOPES)
 googleService = build("sheets", "v4", credentials=credentials)
-SUGGESTION_CHANNEL = int(os.getenv("SUGGESTION_CHANNEL"))
+SUGGESTION_CHANNEL1 = int(os.getenv("SUGGESTION_CHANNEL1"))
+SUGGESTION_SHEET1 = os.getenv("SUGGESTION_SHEET1")
+SUGGESTION_CHANNEL2 = int(os.getenv("SUGGESTION_CHANNEL2"))
+SUGGESTION_SHEET2 = os.getenv("SUGGESTION_SHEET2")
+SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 
 async def main():
     async with bot:
@@ -178,17 +182,22 @@ async def getusers(ctx, role: discord.Role, role2: discord.Role):
     print(s2.difference(s1))
 
 async def logSuggestion(message):
-    if message.channel.id == SUGGESTION_CHANNEL:
-        text = message.author.name
-        text += ": "
-        text += message.content
-        for a in message.attachments:
-            text += a.url
-        result = googleService.spreadsheets().values().append(
-            range="Sheet1!A1", spreadsheetId="", valueInputOption="RAW", body={"values":[[text]]}
-        ).execute()
-        if result['updates']['updatedCells'] > 0:
-            await message.channel.send("suggestion noted")
+    sheet = ""
+    if message.channel.id == SUGGESTION_CHANNEL1:
+        sheet = SUGGESTION_SHEET1
+    elif message.channel.id == SUGGESTION_CHANNEL2:
+        sheet = SUGGESTION_SHEET2
+    else:
+        return
+    
+    text = message.content
+    for a in message.attachments:
+        text += a.url
+    result = googleService.spreadsheets().values().append(
+        range=sheet + "!A1", spreadsheetId=SPREADSHEET_ID, valueInputOption="RAW", body={"values":[[text, message.jump_url]]}
+    ).execute()
+    if result['updates']['updatedCells'] > 0:
+        await message.channel.send("suggestion noted")
 
 if __name__ == "__main__":
     asyncio.run(main())
