@@ -45,41 +45,8 @@ async def on_message(message):
 async def on_ready():
     print(f"I'm ready for you Onii-chan!")
     now_live.start()
-
-class NowLive(discord.ui.View):
-    def __init__(self):
-        super().__init__()
-        self.url = "https://pomf.tv/stream/meimeimei"
-        self.add_item(discord.ui.Button(label="Watch Now!", url=self.url))
-
-is_streaming = False
-@tasks.loop(seconds=10.0)
-async def now_live():
-    global is_streaming
-    channel = await bot.fetch_channel(1225137632346898516)
-    r = requests.get("https://pomf.tv/api/streams/getinfo.php?data=streamdata&stream=meimeimei")
-    data = r.json()
-
-    if is_streaming == True:
-        if data.get("stream_online") == 0:
-            is_streaming == False
-        return
-    
-    if data.get("stream_online") == 1:
-        embed = discord.Embed(
-            color=discord.Colour.red(),
-            title=data.get("streamtitle"),
-            url="https://pomf.tv/stream/meimeimei"
-        )
-        embed.description = "Cunny wife is streaming!!!!"
-        streambanner = data.get("streambanner")
-        embed.set_image(url=f"https://pomf.tv/img/stream/thumb/{streambanner}")
-        await channel.send(content="<@&1226405821357756439>",embed=embed, view=NowLive())
-        is_streaming = True
-
-@bot.command()
 async def schedule(ctx):
-    await ctx.send(content="Meimei's weekly schedule!", file=discord.File("weeklyTWITTER.png"))
+    await ctx.send(content="Meimei's weekly schedule!", file=discord.File("schedule.png"))
 
 @bot.command()
 async def info(ctx):
@@ -98,7 +65,6 @@ async def info(ctx):
     schedule_file2 = discord.File("schedule.png", filename="schedule2.png")
     embed2.set_image(url="attachment://schedule2.png")
 
-    #await ctx.send(file=schedule_file1, embed=embed1)
     await ctx.send(file=schedule_file2, embed=embed2)
 
 def getAvatarUrl(member):
@@ -171,34 +137,6 @@ async def squish(ctx, image: Optional[Union[discord.PartialEmoji, discord.member
     makeSquish(source, dest)
     dest.seek(0) # set the file pointer back to the beginning so it doesn't upload a blank file.
     await ctx.send(file=discord.File(dest, filename=f"{image[0]}-squish.png"))
-
-@bot.command()
-async def getusers(ctx, role: discord.Role, role2: discord.Role):
-    s1 = set([m.name for m in role.members])
-    s2 = set([m.name for m in role2.members])
-    print("users in", role.name, "but not", role2.name)
-    print(s1.difference(s2))
-    print("users in", role2.name, "but not", role.name)
-    print(s2.difference(s1))
-
-async def logSuggestion(message):
-    sheet = ""
-    if message.channel.id == SUGGESTION_CHANNEL1:
-        sheet = SUGGESTION_SHEET1
-    elif message.channel.id == SUGGESTION_CHANNEL2:
-        sheet = SUGGESTION_SHEET2
-    else:
-        return
-    
-    text = message.content
-    for a in message.attachments:
-        text += a.url
-    result = googleService.spreadsheets().values().append(
-        range=sheet + "!A1", spreadsheetId=SPREADSHEET_ID, valueInputOption="RAW", body={"values":[[text, message.jump_url]]}
-    ).execute()
-    if result['updates']['updatedCells'] > 0:
-        await message.add_reaction("👍")
-        await message.reply("Thank you for the suggestion mister!")
 
 if __name__ == "__main__":
     asyncio.run(main())
