@@ -197,7 +197,8 @@ async def logSuggestion(message):
         range=sheet + "!A1", spreadsheetId=SPREADSHEET_ID, valueInputOption="RAW", body={"values":[[text, message.jump_url]]}
     ).execute()
     if result['updates']['updatedCells'] > 0:
-        await message.channel.send("suggestion noted")
+        await message.add_reaction("👍")
+        await message.reply("Thank you for the suggestion mister!")
 
 if __name__ == "__main__":
     asyncio.run(main())
