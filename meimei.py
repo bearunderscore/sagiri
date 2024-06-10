@@ -44,9 +44,10 @@ async def on_message(message):
 @bot.event
 async def on_ready():
     print(f"I'm ready for you Onii-chan!")
-    now_live.start()
+
+@bot.command()
 async def schedule(ctx):
-    await ctx.send(content="Meimei's weekly schedule!", file=discord.File("schedule.png"))
+    await ctx.send(content="Meimei's weekly schedule!", file=discord.File("weeklyTWITTER.png"))
 
 @bot.command()
 async def info(ctx):
@@ -137,6 +138,25 @@ async def squish(ctx, image: Optional[Union[discord.PartialEmoji, discord.member
     makeSquish(source, dest)
     dest.seek(0) # set the file pointer back to the beginning so it doesn't upload a blank file.
     await ctx.send(file=discord.File(dest, filename=f"{image[0]}-squish.png"))
+
+async def logSuggestion(message):
+    sheet = ""
+    if message.channel.id == SUGGESTION_CHANNEL1:
+        sheet = SUGGESTION_SHEET1
+    elif message.channel.id == SUGGESTION_CHANNEL2:
+        sheet = SUGGESTION_SHEET2
+    else:
+        return
+    
+    text = message.content
+    for a in message.attachments:
+        text += a.url
+    result = googleService.spreadsheets().values().append(
+        range=sheet + "!A1", spreadsheetId=SPREADSHEET_ID, valueInputOption="RAW", body={"values":[[text, message.jump_url]]}
+    ).execute()
+    if result['updates']['updatedCells'] > 0:
+        await message.add_reaction("👍")
+        await message.reply("Thank you for the suggestion mister!")
 
 if __name__ == "__main__":
     asyncio.run(main())
