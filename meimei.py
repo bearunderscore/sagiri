@@ -156,7 +156,9 @@ async def logSuggestion(message):
     ).execute()
     if result['updates']['updatedCells'] > 0:
         await message.add_reaction("👍")
-        await message.reply("Thank you for the suggestion mister!")
+        reply = await message.reply("Thank you for the suggestion mister!")
+    await asyncio.sleep(5)
+    await reply.delete()
 
 if __name__ == "__main__":
     asyncio.run(main())
