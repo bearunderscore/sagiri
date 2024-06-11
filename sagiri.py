@@ -15,6 +15,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.oauth2 import service_account
+import datetime
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -44,6 +45,16 @@ async def on_message(message):
 @bot.event
 async def on_ready():
     print(f"I'm ready for you Onii-chan!")
+
+@bot.event
+async def on_member_join(member):
+    print(datetime.datetime.now(datetime.timezone.utc) - member.created_at)
+    if datetime.datetime.now(datetime.timezone.utc) - member.created_at < datetime.timedelta(days=30):
+        print("in here")
+        gatekeep_role = member.guild.get_role(983227625097007144)
+        await member.add_roles(gatekeep_role)
+        return
+    print("shit")
 
 @bot.command()
 async def schedule(ctx):
@@ -155,6 +166,7 @@ async def on_command_error(ctx, e):
 @bot.event
 async def on_error(e):
     print(e)
+
 
 async def logSuggestion(message):
     sheet = ""
