@@ -8,21 +8,46 @@ from petpetgif import petpet as petpetgif
 from PIL import Image
 from dotenv import load_dotenv
 import os
+import os.path
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.errors import HttpError
+from google.oauth2 import service_account
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 bot = commands.Bot(command_prefix="-", intents=discord.Intents.all())
 
+SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
+credentials = service_account.Credentials.from_service_account_file("google api creds.json", scopes=SCOPES)
+googleService = build("sheets", "v4", credentials=credentials)
+SUGGESTION_CHANNEL1 = int(os.getenv("SUGGESTION_CHANNEL1"))
+SUGGESTION_SHEET1 = os.getenv("SUGGESTION_SHEET1")
+SUGGESTION_CHANNEL2 = int(os.getenv("SUGGESTION_CHANNEL2"))
+SUGGESTION_SHEET2 = os.getenv("SUGGESTION_SHEET2")
+SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
+
 async def main():
     async with bot:
         await bot.start(BOT_TOKEN)
+
+@bot.event
+async def on_message(message):
+    if message.author.bot:
+        return
+    if message.content.lower().startswith("suggestion"):
+        await logSuggestion(message)
+    await bot.process_commands(message)
     
 @bot.event
 async def on_ready():
     print(f"I'm ready for you Onii-chan!")
-    now_live.start()
+
+@bot.command()
 async def schedule(ctx):
-    await ctx.send(content="Meimei's weekly schedule!", file=discord.File("schedule.png"))
+    await ctx.send(content="Meimei's weekly schedule!", file=discord.File("weeklyTWITTER.png"))
 
 @bot.command()
 async def info(ctx):
@@ -113,6 +138,25 @@ async def squish(ctx, image: Optional[Union[discord.PartialEmoji, discord.member
     makeSquish(source, dest)
     dest.seek(0) # set the file pointer back to the beginning so it doesn't upload a blank file.
     await ctx.send(file=discord.File(dest, filename=f"{image[0]}-squish.png"))
+
+async def logSuggestion(message):
+    sheet = ""
+    if message.channel.id == SUGGESTION_CHANNEL1:
+        sheet = SUGGESTION_SHEET1
+    elif message.channel.id == SUGGESTION_CHANNEL2:
+        sheet = SUGGESTION_SHEET2
+    else:
+        return
+    
+    text = message.content
+    for a in message.attachments:
+        text += a.url
+    result = googleService.spreadsheets().values().append(
+        range=sheet + "!A1", spreadsheetId=SPREADSHEET_ID, valueInputOption="RAW", body={"values":[[text, message.jump_url]]}
+    ).execute()
+    if result['updates']['updatedCells'] > 0:
+        await message.add_reaction("👍")
+        await message.reply("Thank you for the suggestion mister!")
 
 if __name__ == "__main__":
     asyncio.run(main())
