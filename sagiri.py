@@ -51,7 +51,7 @@ async def schedule(ctx):
 
 @bot.command()
 async def info(ctx):
-    embed2 = discord.Embed(
+    embed = discord.Embed(
         color=discord.Color.from_str("#fdf4f8"),
         title="Meimei's Links!",
         description=(
@@ -62,11 +62,11 @@ async def info(ctx):
             "[Alternative Social Media](https://baraag.net/@meimeich)\n"
         )
     )
-    embed2.set_thumbnail(url="https://cdn.discordapp.com/avatars/1197656323781836931/336c79e1cc8391166cb7db1d400895c9.png")
-    schedule_file2 = discord.File("schedule.png", filename="schedule2.png")
-    embed2.set_image(url="attachment://schedule2.png")
+    embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/1197656323781836931/336c79e1cc8391166cb7db1d400895c9.png")
+    schedule_file = discord.File("assets/schedule.png", filename="schedule.png")
+    embed.set_image(url="attachment://schedule.png")
 
-    await ctx.send(file=schedule_file2, embed=embed2)
+    await ctx.send(file=schedule_file, embed=embed)
 
 def getAvatarUrl(member):
     avatar = member.guild_avatar
@@ -96,7 +96,7 @@ def makeSquish(image, result):
         base.paste(temp, (x,y))
 
     # add the template
-    hand = Image.open('squish3.png')
+    hand = Image.open('assets/squish3.png')
     base.paste(hand, (0,0), hand)
     base.save(result, 'PNG')
 
@@ -138,6 +138,23 @@ async def squish(ctx, image: Optional[Union[discord.PartialEmoji, discord.member
     makeSquish(source, dest)
     dest.seek(0) # set the file pointer back to the beginning so it doesn't upload a blank file.
     await ctx.send(file=discord.File(dest, filename=f"{image[0]}-squish.png"))
+
+
+@bot.command()
+async def update_schedule(ctx):
+    if ctx.author.id != 623396579960946690:
+        return
+    await ctx.message.attachments[0].save(fp="assets/schedule.png")
+    await ctx.send("schedule updated")
+
+@bot.event
+async def on_command_error(ctx, e):
+    print(e)
+
+@bot.event
+async def on_error(e):
+    print(e)
+
 
 async def logSuggestion(message):
     sheet = ""
