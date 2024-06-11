@@ -47,7 +47,7 @@ async def on_ready():
 
 @bot.command()
 async def schedule(ctx):
-    await ctx.send(content="Meimei's weekly schedule!", file=discord.File("weeklyTWITTER.png"))
+    await ctx.send(content="Meimei's weekly schedule!", file=discord.File("assets/schedule.png"))
 
 @bot.command()
 async def info(ctx):
@@ -58,6 +58,7 @@ async def info(ctx):
             "[Pomf](https://pomf.tv/stream/meimeimei)\n"
             "[Throne](https://throne.com/meimeiva)\n"
             "[Soundgasm](https://soundgasm.net/u/meimeibear/)\n"
+            "[Twitter](https://twitter.com/meimeitwt)"
             "[ATF Streamer Thread](https://www.allthefallen.moe/forum/index.php?threads/new-streamer-mei-mei-reporting-for-duty.64173/)\n"
             "[Alternative Social Media](https://baraag.net/@meimeich)\n"
         )
@@ -139,7 +140,7 @@ async def squish(ctx, image: Optional[Union[discord.PartialEmoji, discord.member
     dest.seek(0) # set the file pointer back to the beginning so it doesn't upload a blank file.
     await ctx.send(file=discord.File(dest, filename=f"{image[0]}-squish.png"))
 
-
+@commands.is_owner()
 @bot.command()
 async def update_schedule(ctx):
     if ctx.author.id != 623396579960946690:
@@ -154,7 +155,6 @@ async def on_command_error(ctx, e):
 @bot.event
 async def on_error(e):
     print(e)
-
 
 async def logSuggestion(message):
     sheet = ""
