@@ -67,7 +67,7 @@ async def info(ctx):
             "[Pomf](https://pomf.tv/stream/meimeimei)\n"
             "[Throne](https://throne.com/meimeiva)\n"
             "[Soundgasm](https://soundgasm.net/u/meimeibear/)\n"
-            "[Twitter](https://twitter.com/meimeitwt)"
+            "[Twitter](https://twitter.com/meimeitwt)\n"
             "[ATF Streamer Thread](https://www.allthefallen.moe/forum/index.php?threads/new-streamer-mei-mei-reporting-for-duty.64173/)\n"
             "[Alternative Social Media](https://baraag.net/@meimeich)\n"
         )
