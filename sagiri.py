@@ -31,7 +31,7 @@ SUGGESTION_CHANNEL2 = int(os.getenv("SUGGESTION_CHANNEL2"))
 SUGGESTION_SHEET2 = os.getenv("SUGGESTION_SHEET2")
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 
-THRONE_ID = os.getenv("THRONE_ID")
+THRONE_USERNAME = os.getenv("THRONE_USERNAME")
 THRONE_CHANNEL = int(os.getenv("THRONE_CHANNEL"))
 
 async def main():
@@ -50,7 +50,7 @@ async def on_message(message):
 async def on_ready():
     print(f"I'm ready for you Onii-chan!")
     loop = asyncio.get_event_loop()
-    loop.run_in_executor(None, custom_throne_integration.watchThrone, THRONE_ID, onThroneDono, onThroneWishlistUpdate)
+    loop.run_in_executor(None, custom_throne_integration.watchThrone, THRONE_USERNAME, onThroneDono, onThroneWishlistUpdate)
 
 @bot.event
 async def on_member_join(member):
@@ -227,6 +227,7 @@ def onThroneWishlistUpdate(item):
     channel = bot.get_channel(THRONE_CHANNEL)
     customMessage = item.get("description") if item.get("description") else ""
     embed = discord.Embed(
+        url=f'https://throne.com/{THRONE_USERNAME}/item/{item["id"]}',
         title="New item added on Throne",
         description=(
             f'{item["name"]}!\n' +

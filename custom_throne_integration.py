@@ -1,5 +1,5 @@
 import requests
-import regex
+import re as regex
 from dateutil import parser
 from datetime import datetime
 import time
@@ -62,7 +62,9 @@ def onUpdate(item, callback):
     #print(dono)
     callback(item)
 
-def watchThrone(userId, donoCallback, wishlistCallback):
+def watchThrone(username, donoCallback, wishlistCallback):
+    r = requests.get("https://throne.com/_next/data/8hxxEUYo7kjl5wy3584Xs/" + username + ".json?slug=" + username)
+    userId = regex.search("\"_id\":\s*\"([^\"]+)\"", r.text).group(1)
     delay = 0
     while True:
         try:
