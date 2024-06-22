@@ -50,7 +50,7 @@ async def on_message(message):
 async def on_ready():
     print(f"I'm ready for you Onii-chan!")
     loop = asyncio.get_event_loop()
-    loop.run_in_executor(None, custom_throne_integration.watchThrone, THRONE_ID, onThroneUpdate)
+    loop.run_in_executor(None, custom_throne_integration.watchThrone, THRONE_ID, onThroneDono, onThroneWishlistUpdate)
 
 @bot.event
 async def on_member_join(member):
@@ -193,7 +193,7 @@ async def logSuggestion(message):
     await asyncio.sleep(5)
     await reply.delete()
 
-def onThroneUpdate(dono):
+def onThroneDono(dono):
     print(dono)
     channel = bot.get_channel(THRONE_CHANNEL)
     alertType = dono["type"]
@@ -220,6 +220,20 @@ def onThroneUpdate(dono):
         )
     )
     embed.set_image(url=dono["itemImage"])
+    bot.loop.create_task(channel.send(embed=embed))
+
+def onThroneWishlistUpdate(item):
+    #print(item)
+    channel = bot.get_channel(THRONE_CHANNEL)
+    customMessage = item.get("description") if item.get("description") else ""
+    embed = discord.Embed(
+        title="New item added on Throne",
+        description=(
+            f'{item["name"]}!\n' +
+            (f"\"{customMessage}\"\n" if len(customMessage) > 0 else "")
+        )
+    )
+    embed.set_image(url=item["imgLink"])
     bot.loop.create_task(channel.send(embed=embed))
 
 if __name__ == "__main__":
