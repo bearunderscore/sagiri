@@ -16,6 +16,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.oauth2 import service_account
 import datetime
+import custom_throne_integration
 
 load_dotenv()
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -29,6 +30,9 @@ SUGGESTION_SHEET1 = os.getenv("SUGGESTION_SHEET1")
 SUGGESTION_CHANNEL2 = int(os.getenv("SUGGESTION_CHANNEL2"))
 SUGGESTION_SHEET2 = os.getenv("SUGGESTION_SHEET2")
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
+
+THRONE_USERNAME = os.getenv("THRONE_USERNAME")
+THRONE_CHANNEL = int(os.getenv("THRONE_CHANNEL"))
 
 async def main():
     async with bot:
@@ -45,6 +49,8 @@ async def on_message(message):
 @bot.event
 async def on_ready():
     print(f"I'm ready for you Onii-chan!")
+    loop = asyncio.get_event_loop()
+    loop.run_in_executor(None, custom_throne_integration.watchThrone, THRONE_USERNAME, onThroneDono, onThroneWishlistUpdate)
 
 @bot.event
 async def on_member_join(member):
@@ -186,6 +192,52 @@ async def logSuggestion(message):
         reply = await message.reply("Thank you for the suggestion mister!")
     await asyncio.sleep(5)
     await reply.delete()
+
+def onThroneDono(dono):
+    print(dono)
+    channel = bot.get_channel(THRONE_CHANNEL)
+    alertType = dono["type"]
+    messageTitle = ""
+    verb = ""
+    customMessage = dono.get("message") if dono.get("message") else ""
+    if alertType == "item-purchased-stream-alert":
+        messageTitle = "New gift on Throne"
+        verb = "gifted"
+    elif alertType == "crowdfunding-contribution-stream-alert":
+        messageTitle = "Contribution to a gift"
+        verb = "contributed to"
+    elif alertType == "item-fully-funded-stream-alert":
+        messageTitle = "Item fully funded"
+        verb = "funded"
+    else:
+        return
+    embed = discord.Embed(
+        title=messageTitle,
+        description=(
+            f'{dono["gifterUsername"]} {verb} {dono["itemName"]}!\n' +
+            (f"\"{customMessage}\"\n\n" if len(customMessage) > 0 else "") +
+            "Thanks mister~ Your findom daughter-wife loves all her pay piggies!\n"
+        ),
+        color=discord.Color.from_str("#fdf4f8")
+    )
+    embed.set_image(url=dono["itemImage"])
+    bot.loop.create_task(channel.send(embed=embed))
+
+def onThroneWishlistUpdate(item):
+    #print(item)
+    channel = bot.get_channel(THRONE_CHANNEL)
+    customMessage = item.get("description") if item.get("description") else ""
+    embed = discord.Embed(
+        url=f'https://throne.com/{THRONE_USERNAME}/item/{item["id"]}',
+        title="New item added on Throne!",
+        description=(
+            f'**{item["name"]}**\n' +
+            (f"\"{customMessage}\"\n" if len(customMessage) > 0 else "")
+        ),
+        color=discord.Color.from_str("#fdf4f8")
+    )
+    embed.set_image(url=item["imgLink"])
+    bot.loop.create_task(channel.send(embed=embed))
 
 if __name__ == "__main__":
     asyncio.run(main())
