@@ -131,7 +131,7 @@ async def getImage(ctx, image):
         result = await ctx.message.attachments[0].read()
     return result
 
-@bot.command()
+@bot.command(aliases=["pet"])
 async def pet(ctx, image: Optional[Union[discord.PartialEmoji, discord.member.Member]]):
     image = await getImage(ctx, image)
     if image == None:
