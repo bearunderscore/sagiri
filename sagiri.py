@@ -215,9 +215,10 @@ def onThroneDono(dono):
         title=messageTitle,
         description=(
             f'{dono["gifterUsername"]} {verb} {dono["itemName"]}!\n' +
-            (f"They said: \"{customMessage}\"\n\n" if len(customMessage) > 0 else "") +
+            (f"\"{customMessage}\"\n\n" if len(customMessage) > 0 else "") +
             "Thanks mister~ Your findom daughter-wife loves all her pay piggies!\n"
-        )
+        ),
+        color=discord.Color.from_str("#fdf4f8")
     )
     embed.set_image(url=dono["itemImage"])
     bot.loop.create_task(channel.send(embed=embed))
@@ -228,11 +229,12 @@ def onThroneWishlistUpdate(item):
     customMessage = item.get("description") if item.get("description") else ""
     embed = discord.Embed(
         url=f'https://throne.com/{THRONE_USERNAME}/item/{item["id"]}',
-        title="New item added on Throne",
+        title="New item added on Throne!",
         description=(
-            f'{item["name"]}!\n' +
+            f'**{item["name"]}**\n' +
             (f"\"{customMessage}\"\n" if len(customMessage) > 0 else "")
-        )
+        ),
+        color=discord.Color.from_str("#fdf4f8")
     )
     embed.set_image(url=item["imgLink"])
     bot.loop.create_task(channel.send(embed=embed))
