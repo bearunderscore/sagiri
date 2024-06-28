@@ -234,7 +234,7 @@ def onThroneDono(dono):
     embed = discord.Embed(
         title=messageTitle,
         description=(
-            f'{dono["gifterUsername"]} {verb} {dono["itemName"]}!\n' +
+            f'**{dono["gifterUsername"]}** {verb} *{dono["itemName"]}*!\n' +
             (f"{fundingBar} {funding}%\n" if len(fundingBar) > 0 else "") +
             (f"\"{customMessage}\"\n\n" if len(customMessage) > 0 else "\n") +
             "Thanks mister~ Your findom daughter-wife loves all her pay piggies!\n"
