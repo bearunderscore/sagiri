@@ -16,6 +16,9 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from google.oauth2 import service_account
 import datetime
+import urllib.parse
+import re as regex
+
 import custom_throne_integration
 
 load_dotenv()
@@ -193,12 +196,19 @@ async def logSuggestion(message):
     await asyncio.sleep(5)
     await reply.delete()
 
+class Button(discord.ui.View):
+    def __init__(self, url, label):
+        super().__init__()
+        self.add_item(discord.ui.Button(label=label, url=url))
+
 def onThroneDono(dono):
     print(dono)
     channel = bot.get_channel(THRONE_CHANNEL)
     alertType = dono["type"]
     messageTitle = ""
     verb = ""
+    funding = 0
+    fundingBar = ""
     customMessage = dono.get("message") if dono.get("message") else ""
     if alertType == "item-purchased-stream-alert":
         messageTitle = "New gift on Throne"
@@ -206,6 +216,16 @@ def onThroneDono(dono):
     elif alertType == "crowdfunding-contribution-stream-alert":
         messageTitle = "Contribution to a gift"
         verb = "contributed to"
+        itemId = ""
+        # the donation alert doesn't have the item id, but if there's an image the id is usually in the url
+        if dono.get("itemImage"):
+            m = regex.search("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", dono["itemImage"])
+            if m:
+                itemId = m.group(0)
+        item = custom_throne_integration.fetchItem(THRONE_USERNAME, dono["itemName"], itemId)
+        if item:
+            funding = item["fundingPercentage"]
+            fundingBar = "`|" + "█" * int(funding/2.5) + "-" * (40-int(funding/2.5)) + "|`"
     elif alertType == "item-fully-funded-stream-alert":
         messageTitle = "Item fully funded"
         verb = "funded"
@@ -214,30 +234,41 @@ def onThroneDono(dono):
     embed = discord.Embed(
         title=messageTitle,
         description=(
-            f'{dono["gifterUsername"]} {verb} {dono["itemName"]}!\n' +
-            (f"\"{customMessage}\"\n\n" if len(customMessage) > 0 else "") +
+            f'**{dono["gifterUsername"]}** {verb} *{dono["itemName"]}*!\n' +
+            (f"{fundingBar} {funding}%\n" if len(fundingBar) > 0 else "") +
+            (f"\"{customMessage}\"\n\n" if len(customMessage) > 0 else "\n") +
             "Thanks mister~ Your findom daughter-wife loves all her pay piggies!\n"
         ),
         color=discord.Color.from_str("#fdf4f8")
     )
-    embed.set_image(url=dono["itemImage"])
+    if dono.get("itemImage"):
+        parsed = urllib.parse.urlparse(dono["itemImage"])
+        if (len(parsed.scheme) > 0 and len(parsed.netloc) > 0):
+            embed.set_image(url=dono["itemImage"])
     bot.loop.create_task(channel.send(embed=embed))
 
 def onThroneWishlistUpdate(item):
     #print(item)
     channel = bot.get_channel(THRONE_CHANNEL)
     customMessage = item.get("description") if item.get("description") else ""
+    itemUrl = f'https://throne.com/{THRONE_USERNAME}/item/{item["id"]}'
     embed = discord.Embed(
-        url=f'https://throne.com/{THRONE_USERNAME}/item/{item["id"]}',
+        url=itemUrl,
         title="New item added on Throne!",
         description=(
-            f'**{item["name"]}**\n' +
+            f'**{item["name"]} | ${round(item["price"]//100)}.{round(item["price"]%100):02d} {item["currency"]}**\n' +
             (f"\"{customMessage}\"\n" if len(customMessage) > 0 else "")
         ),
         color=discord.Color.from_str("#fdf4f8")
     )
-    embed.set_image(url=item["imgLink"])
-    bot.loop.create_task(channel.send(embed=embed))
+    if item.get("imgLink"):
+        parsed = urllib.parse.urlparse(item["imgLink"])
+        if (len(parsed.scheme) > 0 and len(parsed.netloc) > 0):
+            embed.set_image(url=item["imgLink"])
+    bot.loop.create_task(sendEmbedWithButton(channel, embed, "View on Throne", itemUrl))
+
+async def sendEmbedWithButton(channel, embed, buttonLabel, buttonUrl):
+    await channel.send(embed=embed, view=Button(label=buttonLabel, url=buttonUrl))
 
 if __name__ == "__main__":
     asyncio.run(main())

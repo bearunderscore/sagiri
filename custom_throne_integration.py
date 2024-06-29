@@ -7,7 +7,9 @@ import time
 startAlert = "\"overlayInformation\":"
 startWishlist = "\"paymentConfiguration\":"
 fieldName = "\s*\"([^\"]+)\":"
-fieldValue = "\s*\"stringValue\":\s*\"(.*)\"$"
+fieldValue1 = "\s*\"stringValue\":\s*\"(.*)\"$"
+fieldValue2 = "\s*\"integerValue\":\s*\"(.*)\"$"
+fieldValue3 = "\s*\"doubleValue\":\s*(.*)$"
 createTime = "\"createTime\":\s*\"([^\"]+)\""
 
 def getData(throneId, callback1, callback2):
@@ -29,12 +31,26 @@ def getData(throneId, callback1, callback2):
             currentData["alert"] = True
         if startWishlist in string:
             currentData["wishlist"] = True
-        if regex.search(fieldValue, string):
+        if regex.search(fieldValue1, string):
             m1 = regex.search(fieldName, prevLine)
-            m2 = regex.search(fieldValue, string)
+            m2 = regex.search(fieldValue1, string)
             if m1 and m2:
                 name = m1.group(1)
                 value = m2.group(1)
+                currentData[name] = value
+        if regex.search(fieldValue2, string):
+            m1 = regex.search(fieldName, prevLine)
+            m2 = regex.search(fieldValue2, string)
+            if m1 and m2:
+                name = m1.group(1)
+                value = int(m2.group(1))
+                currentData[name] = value
+        if regex.search(fieldValue3, string):
+            m1 = regex.search(fieldName, prevLine)
+            m2 = regex.search(fieldValue3, string)
+            if m1 and m2:
+                name = m1.group(1)
+                value = float(m2.group(1))
                 currentData[name] = value
         if regex.search(createTime, string):
             stringTime = regex.search(createTime, string).group(1)
@@ -62,6 +78,25 @@ def onUpdate(item, callback):
     #print(dono)
     callback(item)
 
+def fetchItem(username, itemName, itemId):
+    r = requests.get("https://throne.com/_next/data/8hxxEUYo7kjl5wy3584Xs/" + username + ".json?slug=" + username).json()
+    temp = r["pageProps"]["fallback"]
+    wishlistKey = ""
+    for k in temp.keys():
+        if k.find("useWishlist") != -1:
+            wishlistKey = k
+            break
+    items = temp[wishlistKey]["wishlistItems"]
+    # check id first, fallback to name matching if we don't have an id or can't find it by that
+    if len(itemId) > 0:
+        for i in items:
+            if i["id"] == itemId:
+                return i
+    if len(itemName) > 0:
+        for i in items:
+            if i["name"] == itemName:
+                return i
+        
 def watchThrone(username, donoCallback, wishlistCallback):
     r = requests.get("https://throne.com/_next/data/8hxxEUYo7kjl5wy3584Xs/" + username + ".json?slug=" + username)
     userId = regex.search("\"_id\":\s*\"([^\"]+)\"", r.text).group(1)
