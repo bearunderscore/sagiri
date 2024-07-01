@@ -237,7 +237,7 @@ def onThroneDono(dono):
             f'**{dono["gifterUsername"]}** {verb} *{dono["itemName"]}*!\n' +
             (f"{fundingBar} {funding}%\n" if len(fundingBar) > 0 else "") +
             (f"\"{customMessage}\"\n\n" if len(customMessage) > 0 else "\n") +
-            "Thanks mister~ Your findom daughter-wife loves all her pay piggies!\n"
+            "Thank you so much for your cumtribution, mister!\n"
         ),
         color=discord.Color.from_str("#fdf4f8")
     )
