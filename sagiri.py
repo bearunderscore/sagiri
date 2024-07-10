@@ -53,7 +53,7 @@ async def on_message(message):
 async def on_ready():
     print(f"I'm ready for you Onii-chan!")
     loop = asyncio.get_event_loop()
-    loop.run_in_executor(None, custom_throne_integration.watchThrone, THRONE_USERNAME, onThroneDono, onThroneWishlistUpdate)
+    loop.run_in_executor(None, custom_throne_integration.watchThrone, THRONE_USERNAME, onThroneContribution, onThroneGift, onThroneWishlistUpdate)
 
 @bot.event
 async def on_member_join(member):
@@ -201,40 +201,73 @@ class Button(discord.ui.View):
         super().__init__()
         self.add_item(discord.ui.Button(label=label, url=url))
 
-def onThroneDono(dono):
-    print(dono)
+def onThroneGift(gift):
+    print("GIFT")
+    print(gift)
     channel = bot.get_channel(THRONE_CHANNEL)
-    alertType = dono["type"]
-    messageTitle = ""
-    verb = ""
-    funding = 0
-    fundingBar = ""
-    customMessage = dono.get("message") if dono.get("message") else ""
-    if alertType == "item-purchased-stream-alert":
-        messageTitle = "New gift on Throne"
-        verb = "gifted"
-    elif alertType == "crowdfunding-contribution-stream-alert":
-        messageTitle = "Contribution to a gift"
-        verb = "contributed to"
-        itemId = ""
-        # the donation alert doesn't have the item id, but if there's an image the id is usually in the url
-        if dono.get("itemImage"):
-            m = regex.search("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", dono["itemImage"])
-            if m:
-                itemId = m.group(0)
-        item = custom_throne_integration.fetchItem(THRONE_USERNAME, dono["itemName"], itemId)
-        if item:
-            funding = item["fundingPercentage"]
-            fundingBar = "`|" + "█" * int(funding/2.5) + "-" * (40-int(funding/2.5)) + "|`"
-    elif alertType == "item-fully-funded-stream-alert":
+    messageTitle = "New gift on Throne"
+    crowd = gift["isCrowdfunded"]
+    if crowd:
         messageTitle = "Item fully funded"
-        verb = "funded"
-    else:
-        return
+    price = f'${round(gift["price"]//100)}.{round(gift["price"]%100):02d} {gift["currency"]}'
+    if crowd:
+        price = "a total of " + price
+    gifters = gift["customizations"]["customers"]
+    gifterNames = ""
+    customMessage = ""
+    for gifter in gifters:
+        if gifter.get("customerUsername") and len(gifter.get("customerUsername")) > 0:
+            if len(gifterNames) > 0:
+                gifterNames += ", "
+            gifterNames += gifter["customerUsername"]
+        if gifter.get("customerMessage") and len(gifter.get("customerMessage")) > 0:
+            if crowd:
+                username = "Anon"
+                if gifter.get("customerUsername") and len(gifter.get("customerUsername")) > 0:
+                    username = gifter.get("customerUsername")
+                customMessage += f'{username}: "{gifter["customerMessage"]}"\n'
+            else:
+                customMessage += f'"{gifter["customerMessage"]}"\n'
     embed = discord.Embed(
         title=messageTitle,
         description=(
-            f'**{dono["gifterUsername"]}** {verb} *{dono["itemName"]}*!\n' +
+            (f'**{gifterNames}** ' if len(gifterNames) > 0 else "") + f'gifted *{gift["name"]}* for {price}!\n' +
+            (f"{customMessage}\n" if len(customMessage) > 0 else "\n") +
+            "Thank you so much for your cumtribution, mister!\n"
+        ),
+        color=discord.Color.from_str("#fdf4f8")
+    )
+    if gift.get("imageSrc"):
+        parsed = urllib.parse.urlparse(gift["imageSrc"])
+        if (len(parsed.scheme) > 0 and len(parsed.netloc) > 0):
+            embed.set_image(url=gift["imageSrc"])
+    bot.loop.create_task(channel.send(embed=embed))
+
+def onThroneContribution(dono):
+    print("CONTRIBUTION")
+    print(dono)
+    channel = bot.get_channel(THRONE_CHANNEL)
+    funding = 0
+    fundingBar = ""
+    customMessage = dono.get("message") if dono.get("message") else ""
+    messageTitle = "Contribution to a gift"
+    verb = "contributed to"
+    if dono.get("formattedContributionAmount") and len(dono["formattedContributionAmount"]) > 0:
+        verb = f'contributed {dono["formattedContributionAmount"]} to'
+    itemId = ""
+    # the donation alert doesn't have the item id, but if there's an image the id is usually in the url
+    if dono.get("itemImage"):
+        m = regex.search("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", dono["itemImage"])
+        if m:
+            itemId = m.group(0)
+    item = custom_throne_integration.fetchItem(THRONE_USERNAME, dono["itemName"], itemId)
+    if item:
+        funding = item["fundingPercentage"]
+        fundingBar = "`|" + "█" * int(funding/2.5) + "-" * (40-int(funding/2.5)) + "|`"
+    embed = discord.Embed(
+        title=messageTitle,
+        description=(
+            (f'**{dono["gifterUsername"]}** ' if len(dono["gifterUsername"]) > 0 else "") + f'{verb} *{dono["itemName"]}*!\n' +
             (f"{fundingBar} {funding}%\n" if len(fundingBar) > 0 else "") +
             (f"\"{customMessage}\"\n\n" if len(customMessage) > 0 else "\n") +
             "Thank you so much for your cumtribution, mister!\n"
