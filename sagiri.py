@@ -267,7 +267,7 @@ def onThroneContribution(dono):
     embed = discord.Embed(
         title=messageTitle,
         description=(
-            (f'**{dono["gifterUsername"]}** ' if len(dono["gifterUsername"]) > 0 else "") + f'{verb} *{dono["itemName"]}*!\n' +
+            (f'**{dono["gifterUsername"]}** ' if len(dono["gifterUsername"]) > 0 else "**Anon**") + f'{verb} *{dono["itemName"]}*!\n' +
             (f"{fundingBar} {funding}%\n" if len(fundingBar) > 0 else "") +
             (f"\"{customMessage}\"\n\n" if len(customMessage) > 0 else "\n") +
             "Thank you so much for your cumtribution, mister!\n"
