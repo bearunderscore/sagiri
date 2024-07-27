@@ -231,7 +231,7 @@ def onThroneGift(gift):
     embed = discord.Embed(
         title=messageTitle,
         description=(
-            (f'**{gifterNames}** ' if len(gifterNames) > 0 else "") + f'gifted *{gift["name"]}* for {price}!\n' +
+            (f'**{gifterNames}** ' if len(gifterNames) > 0 else "**Anon** ") + f'gifted *{gift["name"]}* for {price}!\n' +
             (f"{customMessage}\n" if len(customMessage) > 0 else "\n") +
             "Thank you so much for your cumtribution, mister!\n"
         ),
@@ -261,13 +261,16 @@ def onThroneContribution(dono):
         if m:
             itemId = m.group(0)
     item = custom_throne_integration.fetchItem(THRONE_USERNAME, dono["itemName"], itemId)
-    if item:
-        funding = item["fundingPercentage"]
-        fundingBar = "`|" + "█" * int(funding/2.5) + "-" * (40-int(funding/2.5)) + "|`"
+##    if item:
+##        funding = item["fundingPercentage"]
+##        fundingBar = "`|" + "█" * int(funding/2.5) + "-" * (40-int(funding/2.5)) + "|`"
+    name = dono["itemName"]
+    if item and item.get("name") and len(item["name"]) > 0:
+        name = item["name"]
     embed = discord.Embed(
         title=messageTitle,
         description=(
-            (f'**{dono["gifterUsername"]}** ' if len(dono["gifterUsername"]) > 0 else "**Anon**") + f'{verb} *{dono["itemName"]}*!\n' +
+            (f'**{dono["gifterUsername"]}** ' if len(dono["gifterUsername"]) > 0 else "**Anon**") + f'{verb} *{name}*!\n' +
             (f"{fundingBar} {funding}%\n" if len(fundingBar) > 0 else "") +
             (f"\"{customMessage}\"\n\n" if len(customMessage) > 0 else "\n") +
             "Thank you so much for your cumtribution, mister!\n"
