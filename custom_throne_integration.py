@@ -148,4 +148,12 @@ def watchThrone(username, contributionCallback, giftCallback, wishlistCallback):
         if delay > 0:
             print("waiting", delay, "seconds before reconnecting to throne")
             time.sleep(delay)
+            try:
+                r = requests.get("https://throne.com/" + username)
+                buildId2 = regex.search("\"buildId\":\s*\"([^\"]+)\"", r.text).group(1)
+                if buildId2 != buildId:
+                    print("udpating throne buildId", buildId2)
+                    buildId = buildId2
+            except Exception as e:
+                pass
 
