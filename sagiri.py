@@ -37,6 +37,9 @@ SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 THRONE_USERNAME = os.getenv("THRONE_USERNAME")
 THRONE_CHANNEL = int(os.getenv("THRONE_CHANNEL"))
 
+ANNOUNCEMENT_CHANNEL = 1250333968935555202
+MEIMEI_UID = 1197656323781836931
+
 async def main():
     async with bot:
         await bot.start(BOT_TOKEN)
@@ -45,6 +48,8 @@ async def main():
 async def on_message(message):
     if message.author.bot:
         return
+    if message.channel.id == ANNOUNCEMENT_CHANNEL and message.author.id == 1197656323781836931 and "schedule" in message.content.lower():
+        await message.attachments[0].save(fp="assets/schedule.png")
     if message.content.lower().startswith("suggestion"):
         await logSuggestion(message)
     await bot.process_commands(message)
