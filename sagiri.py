@@ -93,7 +93,7 @@ async def info(ctx):
             "[Throne](https://throne.com/meimeiva)\n"
             "[Soundgasm](https://soundgasm.net/u/meimeibear/)\n"
             "[Matrix](https://discord.com/channels/1225136839006879874/1225136839006879877/1257765920454217791)\n"
-            "[VTuber Wiki](https://virtualyoutuber.fandom.com/wiki/Mei-Mei)"
+            "[VTuber Wiki](https://virtualyoutuber.fandom.com/wiki/Mei-Mei)\n"
             "[ATF Streamer Thread](https://www.allthefallen.moe/forum/index.php?threads/new-streamer-mei-mei-reporting-for-duty.64173/)\n"
             "[VOD Archive](https://gofile.io/d/H11r46)\n"
         )
