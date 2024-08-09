@@ -1,11 +1,12 @@
 import asyncio
 import discord
 import requests
+from requests_toolbelt import MultipartEncoder
 from discord.ext import commands, tasks
 from io import BytesIO
 from typing import Union, Optional
 from petpetgif import petpet as petpetgif
-from PIL import Image
+from PIL import Image, ImageDraw
 from dotenv import load_dotenv
 import os
 import os.path
@@ -39,6 +40,8 @@ THRONE_CHANNEL = int(os.getenv("THRONE_CHANNEL"))
 
 ANNOUNCEMENT_CHANNEL = 1250333968935555202
 MEIMEI_UID = 1197656323781836931
+
+CATBOX_TOKEN = os.getenv("CATBOX_TOKEN")
 
 async def main():
     async with bot:
@@ -322,6 +325,86 @@ def onThroneWishlistUpdate(item):
 
 async def sendEmbedWithButton(channel, embed, buttonLabel, buttonUrl):
     await channel.send(embed=embed, view=Button(label=buttonLabel, url=buttonUrl))
+
+@bot.command(aliases=["album-from-thread"])
+@commands.has_any_role(1225149408593838180, 1225328554624024667)
+async def albumFromThread(ctx, thread: discord.Thread, maxImages: int, includeName: bool):
+    numImages = {}
+    uploadedImages = []
+    async for message in thread.history(oldest_first=False):
+        for attachment in reversed(message.attachments):
+            if attachment.height: #images and videos will have height and width defined
+                existingImages = numImages.get(message.author.id, 0)
+                if existingImages < maxImages:
+                    r = await uploadImageToCatbox(attachment, message.author.display_name, includeName)
+                    numImages[message.author.id] = existingImages + 1
+                    if r:
+                        uploadedImages.append(r)
+                else:
+                    print("skipping \"", attachment.filename, "\" too many images from user")
+            else:
+                print("skipping \"", attachment.filename, "\" not an image")
+    if len(uploadedImages) == 0:
+        await ctx.send("no images found in thread")
+        return
+    imgIds = []
+    for url in uploadedImages:
+        imgId = url.split("/")[-1]
+        imgIds.append(imgId)
+    imgIdString = " ".join(imgIds)
+    data={"reqtype": "createalbum",
+          "userhash": CATBOX_TOKEN,
+          "title": thread.name if len(thread.name)>0 else "title",
+          "desc": thread.name if len(thread.name)>0 else "description",
+          "files": imgIdString
+          }
+    r = requests.post("https://catbox.moe/user/api.php", data=data)
+    if r.status_code == 200:
+        await ctx.send(r.text)
+    else:
+        await ctx.send("error creating album: " + r.text)
+
+async def uploadImageToCatbox(attachment, name, includeName):
+    try:
+        print("going to upload", attachment.filename, "from", name, "with nick" if includeName else "without nick")
+        image = await attachment.read()
+        if image == None:
+            print("error reading", attachment.filename)
+            return None
+        source = BytesIO(image)
+        dest = BytesIO()
+        if includeName:
+            orig = Image.open(source)
+            # put name at the top
+            w,h = orig.size
+            textSize = 50
+            base = Image.new('RGBA',(w , int(h + textSize * 1.5)),(0,0,0,0))
+            try:
+                temp = orig.convert('RGBA')
+                base.paste(temp, (0,int(textSize*1.5)), temp)
+            except Exception as e:
+                print(e)
+                base.paste(orig, (0,int(textSize*1.5)))
+
+            # add the text
+            draw = ImageDraw.Draw(base)
+            draw.text((0,0), name, font_size=textSize, fill="#FFFFFF", stroke_width=2, stroke_fill="#000000")
+            base.save(dest, 'PNG')
+        else:
+            # no edit needed
+            dest = source
+        dest.seek(0)
+        filename = "image.png" if includeName else attachment.filename
+        m = MultipartEncoder(fields={"reqtype":"fileupload", "userhash":CATBOX_TOKEN, "fileToUpload":(filename, dest)})
+        r = requests.post("https://catbox.moe/user/api.php", data = m, headers = {"Content-Type": m.content_type})
+        if r.status_code == 200:
+            return r.text
+        else:
+            print("error uploading file", r.text)
+            return None
+    except Exception as e:
+        print(e)
+        return None
 
 if __name__ == "__main__":
     asyncio.run(main())
