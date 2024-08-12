@@ -65,11 +65,13 @@ async def on_ready():
 
 @bot.event
 async def on_member_join(member):
+    gatekeep_role = member.guild.get_role(1246240396074422333)
     if datetime.datetime.now(datetime.timezone.utc) - member.created_at < datetime.timedelta(days=30):
         print("in here")
-        gatekeep_role = member.guild.get_role(1246240396074422333)
         await member.add_roles(gatekeep_role)
         return
+    if gatekeep_role in member.roles:
+        member.remove_roles(gatekeep_role)
 
 @bot.command()
 async def matrix(ctx):
