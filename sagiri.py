@@ -333,7 +333,7 @@ async def sendEmbedWithButton(channel, embed, buttonLabel, buttonUrl):
 async def albumFromThread(ctx, thread: discord.Thread, maxImages: int, includeName: bool):
     numImages = {}
     uploadedImages = []
-    async for message in thread.history(oldest_first=False):
+    async for message in thread.history(limit=None, oldest_first=False):
         for attachment in reversed(message.attachments):
             if attachment.height: #images and videos will have height and width defined
                 existingImages = numImages.get(message.author.id, 0)
