@@ -79,9 +79,9 @@ async def matrix(ctx):
         title = "How do I join the matrix?",
         color = discord.Color.from_str("#fdf4f8")
     )
-    embed.add_field(name = "Step 1", value = "Talk in the Discord until you have 150 messages.", inline=False)
+    embed.add_field(name = "Step 1", value = "Wait two weeks after joining the server, and talk until you have 150 messages", inline=False)
     embed.add_field(name = "Step 2", value = "Make a cutefunny.art account if you haven't already. Feel free to ask a mod if you encounter any issues with this step.\nhttps://cutefunny.art/posts/matrixstart/", inline=False)
-    embed.add_field(name = "Step 3", value = "DM your matrix username to a <@&1225328554624024667> and ask for an invite!", inline=False)
+    embed.add_field(name = "Step 3", value = "Request to join in https://discord.com/channels/1225136839006879874/1229183855609774182/1276777753873485857", inline=False)
     await ctx.send(embed = embed)
 
 @bot.command()
