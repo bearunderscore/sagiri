@@ -304,7 +304,11 @@ def onThroneContribution(dono):
         parsed = urllib.parse.urlparse(dono["itemImage"])
         if (len(parsed.scheme) > 0 and len(parsed.netloc) > 0):
             embed.set_image(url=dono["itemImage"])
-    bot.loop.create_task(channel.send(embed=embed))
+    if item and item.get("id"):
+        itemUrl = f'https://throne.com/{THRONE_USERNAME}/item/{item["id"]}'
+        bot.loop.create_task(sendEmbedWithButton(channel, embed, "View on Throne", itemUrl))
+    else:
+        bot.loop.create_task(channel.send(embed=embed))
 
 def onThroneWishlistUpdate(item):
     #print(item)
