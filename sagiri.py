@@ -243,13 +243,14 @@ def onThroneGift(gift):
                 gifterNames += ", "
             gifterNames += gifter["customerUsername"]
         if gifter.get("customerMessage") and len(gifter.get("customerMessage")) > 0:
+            msg = gifter["customerMessage"].replace("\\n", "\n> ")
             if crowd:
                 username = "Anon"
                 if gifter.get("customerUsername") and len(gifter.get("customerUsername")) > 0:
                     username = gifter.get("customerUsername")
-                customMessage += f'{username}: "{gifter["customerMessage"]}"\n'
+                customMessage += f'> {msg}\n- {username}\n'
             else:
-                customMessage += f'"{gifter["customerMessage"]}"\n'
+                customMessage += f'> {msg}\n'
     embed = discord.Embed(
         title=messageTitle,
         description=(
@@ -271,7 +272,7 @@ def onThroneContribution(dono):
     channel = bot.get_channel(THRONE_CHANNEL)
     funding = 0
     fundingBar = ""
-    customMessage = dono.get("message") if dono.get("message") else ""
+    customMessage = dono.get("message").replace("\\n", "\n> ") if dono.get("message") else ""
     messageTitle = "Contribution to a gift"
     verb = "contributed to"
     if dono.get("formattedContributionAmount") and len(dono["formattedContributionAmount"]) > 0:
@@ -294,7 +295,7 @@ def onThroneContribution(dono):
         description=(
             (f'**{dono["gifterUsername"]}** ' if len(dono["gifterUsername"]) > 0 else "**Anon**") + f'{verb} *{name}*!\n' +
             (f"{fundingBar} {funding}%\n" if len(fundingBar) > 0 else "") +
-            (f"\"{customMessage}\"\n\n" if len(customMessage) > 0 else "\n") +
+            (f"> {customMessage}\n\n" if len(customMessage) > 0 else "\n") +
             "Thank you so much for your cumtribution, mister!\n"
         ),
         color=discord.Color.from_str("#fdf4f8")
@@ -303,19 +304,23 @@ def onThroneContribution(dono):
         parsed = urllib.parse.urlparse(dono["itemImage"])
         if (len(parsed.scheme) > 0 and len(parsed.netloc) > 0):
             embed.set_image(url=dono["itemImage"])
-    bot.loop.create_task(channel.send(embed=embed))
+    if item and item.get("id"):
+        itemUrl = f'https://throne.com/{THRONE_USERNAME}/item/{item["id"]}'
+        bot.loop.create_task(sendEmbedWithButton(channel, embed, "View on Throne", itemUrl))
+    else:
+        bot.loop.create_task(channel.send(embed=embed))
 
 def onThroneWishlistUpdate(item):
     #print(item)
     channel = bot.get_channel(THRONE_CHANNEL)
-    customMessage = item.get("description") if item.get("description") else ""
+    customMessage = item.get("description").replace("\\n", "\n> ") if item.get("description") else ""
     itemUrl = f'https://throne.com/{THRONE_USERNAME}/item/{item["id"]}'
     embed = discord.Embed(
         url=itemUrl,
         title="New item added on Throne!",
         description=(
             f'**{item["name"]} | ${round(item["price"]//100)}.{round(item["price"]%100):02d} {item["currency"]}**\n' +
-            (f"\"{customMessage}\"\n" if len(customMessage) > 0 else "")
+            (f"> {customMessage}\n" if len(customMessage) > 0 else "")
         ),
         color=discord.Color.from_str("#fdf4f8")
     )
