@@ -51,6 +51,18 @@ async def main():
 async def on_message(message):
     if message.author.bot:
         return
+    doujin_links = regex.findall("https:\/\/nhentai\.(?:net|com)\/g\/\d+\/?|https:\/\/e[x-]hentai.org\/g\/\d+\/[0-9a-f]+\/?", message.content)
+    if doujin_links != []:
+        edited_links = "\n".join(doujin_links)
+        edited_links = regex.sub("https?:\/\/nhentai\.(?:net|com)\/g\/|https:\/\/e[x-]hentai.org\/g\/", "https://lolicon.store/g/", edited_links)
+        await message.edit(suppress=True)
+        edited_message = await message.reply(edited_links)
+        for embed in edited_message.embeds:
+            if "lolicon" in embed.description.lower():
+                await edited_message.delete()
+                await message.reply("Please don't post loli doujins >.<", delete_after=5)
+                await message.delete()
+                break
     if message.channel.id == ANNOUNCEMENT_CHANNEL and message.author.id == 1197656323781836931 and "schedule" in message.content.lower():
         await message.attachments[0].save(fp="assets/schedule.png")
     if message.content.lower().startswith("suggestion"):
