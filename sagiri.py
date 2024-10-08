@@ -34,6 +34,7 @@ SUGGESTION_SHEET1 = os.getenv("SUGGESTION_SHEET1")
 SUGGESTION_CHANNEL2 = int(os.getenv("SUGGESTION_CHANNEL2"))
 SUGGESTION_SHEET2 = os.getenv("SUGGESTION_SHEET2")
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
+AUDIT_CHANNEL = int(os.getenv("AUDIT_CHANNEL"))
 
 THRONE_USERNAME = os.getenv("THRONE_USERNAME")
 THRONE_CHANNEL = int(os.getenv("THRONE_CHANNEL"))
@@ -81,9 +82,15 @@ async def on_member_join(member):
     if datetime.datetime.now(datetime.timezone.utc) - member.created_at < datetime.timedelta(days=30):
         print("in here")
         await member.add_roles(gatekeep_role)
-        return
-    if gatekeep_role in member.roles:
+    elif gatekeep_role in member.roles:
         member.remove_roles(gatekeep_role)
+    channel = bot.get_channel(AUDIT_CHANNEL)
+    await channel.send(f"User {member.id} joined")
+
+@bot.event
+async def on_raw_member_remove(payload):
+    channel = bot.get_channel(AUDIT_CHANNEL)
+    await channel.send(f"User {payload.user.id} left")
 
 @bot.command()
 async def matrix(ctx):
