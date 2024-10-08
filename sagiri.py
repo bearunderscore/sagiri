@@ -56,7 +56,7 @@ async def on_message(message):
         edited_links = "\n".join(doujin_links)
         edited_links = regex.sub("https?:\/\/nhentai\.(?:net|com)\/g\/|https:\/\/e[x-]hentai.org\/g\/", "https://lolicon.store/g/", edited_links)
         await message.edit(suppress=True)
-        edited_message = await message.reply(edited_links)
+        edited_message = await message.reply(edited_links, mention_author=False)
         for embed in edited_message.embeds:
             if "lolicon" in embed.description.lower():
                 await edited_message.delete()
