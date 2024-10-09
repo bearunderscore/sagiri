@@ -56,12 +56,13 @@ async def on_message(message):
     if doujin_links != []:
         edited_links = "\n".join(doujin_links)
         edited_links = regex.sub("https?:\/\/nhentai\.(?:net|com)\/g\/|https:\/\/e[x-]hentai.org\/g\/", "https://lolicon.store/g/", edited_links)
-        for link in edited_links:
+        for link in edited_links.split("\n"):
             response = requests.get(link, headers={'User-Agent': 'Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)'})
             discord_embed_data = regex.search("<meta property=\"og:description\"(?:.|\n)+?>", response.text)[0]
             is_loli_doujin = False
-            if "lolicon" in discord_embed_data:
+            if "lolicon" in discord_embed_data.lower():
                 await message.reply("Please don't post loli doujins >.< (Just send the code)", delete_after=5)
+                await message.delete()
                 is_loli_doujin = True
         if not is_loli_doujin:
             await message.edit(suppress=True)
