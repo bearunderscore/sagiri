@@ -155,5 +155,6 @@ def watchThrone(username, contributionCallback, giftCallback, wishlistCallback):
                     print("udpating throne buildId", buildId2)
                     buildId = buildId2
             except Exception as e:
+                print(e)
                 pass
 

@@ -330,7 +330,7 @@ def onThroneContribution(dono):
         bot.loop.create_task(channel.send(embed=embed))
 
 def onThroneWishlistUpdate(item):
-    #print(item)
+    print(item)
     channel = bot.get_channel(THRONE_CHANNEL)
     customMessage = item.get("description").replace("\\n", "\n> ") if item.get("description") else ""
     itemUrl = f'https://throne.com/{THRONE_USERNAME}/item/{item["id"]}'
