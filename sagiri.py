@@ -56,14 +56,16 @@ async def on_message(message):
     if doujin_links != []:
         edited_links = "\n".join(doujin_links)
         edited_links = regex.sub("https?:\/\/nhentai\.(?:net|com)\/g\/|https:\/\/e[x-]hentai.org\/g\/", "https://lolicon.store/g/", edited_links)
-        await message.edit(suppress=True)
-        edited_message = await message.reply(edited_links, mention_author=False)
-        for embed in edited_message.embeds:
-            if "lolicon" in embed.description.lower():
-                await edited_message.delete()
-                await message.reply("Please don't post loli doujins >.<", delete_after=5)
-                await message.delete()
-                break
+        for link in edited_links:
+            response = requests.get(link, headers={'User-Agent': 'Mozilla/5.0 (compatible; Discordbot/2.0; +https://discordapp.com)'})
+            discord_embed_data = regex.search("<meta property=\"og:description\"(?:.|\n)+?>", response.text)[0]
+            is_loli_doujin = False
+            if "lolicon" in discord_embed_data:
+                await message.reply("Please don't post loli doujins >.< (Just send the code)", delete_after=5)
+                is_loli_doujin = True
+        if not is_loli_doujin:
+            await message.edit(suppress=True)
+            await message.reply(edited_links, mention_author=False)
     if message.channel.id == ANNOUNCEMENT_CHANNEL and message.author.id == 1197656323781836931 and "schedule" in message.content.lower():
         await message.attachments[0].save(fp="assets/schedule.png")
     if message.content.lower().startswith("suggestion"):
