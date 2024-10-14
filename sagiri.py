@@ -84,7 +84,7 @@ async def on_message(message):
             }
         ).json()
         last_schedule_id = list(r["data"].keys())[0]
-        last_schedule_updated_name = r["data"][last_schedule_id]["name"].replace(" | CURRENT SCHEDULE", "")
+        last_schedule_updated_name = r["data"][last_schedule_id]["name"].replace(" ----- CURRENT SCHEDULE", "")
 
         # rename last schedule so it's no longer the current one
         r = requests.put(
@@ -112,7 +112,7 @@ async def on_message(message):
                 "token": GOFILE_API_TOKEN
             },
             files = {
-                "file": (f"{date_range_string} | CURRENT SCHEDULE", open("assets/schedule.png", "rb"), "text/plain"),
+                "file": (f"{date_range_string} ----- CURRENT SCHEDULE", open("assets/schedule.png", "rb"), "text/plain"),
                 "folderId": (None, folder_id)
             }
         )
