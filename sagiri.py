@@ -43,6 +43,7 @@ ANNOUNCEMENT_CHANNEL = 1225137052165734513
 MEIMEI_UID = 1197656323781836931
 
 CATBOX_TOKEN = os.getenv("CATBOX_TOKEN")
+GOFILE_API_TOKEN = os.getenv("GOFILE_API_TOKEN")
 
 async def main():
     async with bot:
@@ -67,8 +68,55 @@ async def on_message(message):
         if not is_loli_doujin:
             await message.edit(suppress=True)
             await message.reply(edited_links, mention_author=False)
-    if message.channel.id == ANNOUNCEMENT_CHANNEL and message.author.id == 1197656323781836931 and "schedule" in message.content.lower():
+    if message.channel.id == ANNOUNCEMENT_CHANNEL and message.author.id == MEIMEI_UID and "schedule" in message.content.lower() and len(message.attachments) > 0:
         await message.attachments[0].save(fp="assets/schedule.png")
+        
+        # get last schedule
+        folder_id = "48487a25-3367-4759-8b0e-f14436f7e7c8"
+        r = requests.get(
+            url = "https://api.gofile.io/contents/search",
+            headers = {
+                "Authorization": f"Bearer {GOFILE_API_TOKEN}",
+            },
+            params = {
+                "contentId": folder_id,
+                "searchedString": "CURRENT SCHEDULE"
+            }
+        ).json()
+        last_schedule_id = list(r["data"].keys())[0]
+        last_schedule_updated_name = r["data"][last_schedule_id]["name"].replace(" | CURRENT SCHEDULE", "")
+
+        # rename last schedule so it's no longer the current one
+        r = requests.put(
+            url = f"https://api.gofile.io/contents/{last_schedule_id}/update",
+            headers = {
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {GOFILE_API_TOKEN}"
+            },
+            json = {
+                "attribute": "name",
+                "attributeValue": last_schedule_updated_name
+            }
+        )
+        
+        # https://stackoverflow.com/questions/20413843/is-there-any-kind-of-standard-for-representing-date-ranges
+        # upload new schedule
+        start_date = datetime.date.now().isoformat()
+        end_date = datetime.date.now() + datetime.timedelta(days = 7)
+        end_date = end_date.isoformat()
+        date_range_string = f"{start_date}--{end_date}"
+        gofile_server = requests.get("https://api.gofile.io/servers").json()["data"]["servers"][0]["name"]
+        r = requests.post(
+            url = f"https://{gofile_server}.gofile.io/contents/uploadFile",
+            data = {
+                "token": GOFILE_API_TOKEN
+            },
+            files = {
+                "file": (f"{date_range_string} | CURRENT SCHEDULE", open("assets/schedule.png", "rb"), "text/plain"),
+                "folderId": (None, folder_id)
+            }
+        )
+
     if message.content.lower().startswith("suggestion"):
         await logSuggestion(message)
     await bot.process_commands(message)
