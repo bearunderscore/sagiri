@@ -101,10 +101,14 @@ async def on_message(message):
         
         # https://stackoverflow.com/questions/20413843/is-there-any-kind-of-standard-for-representing-date-ranges
         # upload new schedule
-        start_date = datetime.date.now().isoformat()
-        end_date = datetime.date.now() + datetime.timedelta(days = 7)
+        today = datetime.now()
+        start_date = today.isoformat()
+        end_date = today + datetime.timedelta(days = 6)
         end_date = end_date.isoformat()
-        date_range_string = f"{start_date}--{end_date}"
+        # necessary because ISO calendar year can have 52 or 53 weeks
+        # dec 28 is always in the last iso week of the year 
+        total_weeks = datetime.date(today.year, 12, 28).isocalendar().week
+        date_range_string = f"{total_weeks - today.isocalendar().week}-{start_date}--{end_date}"
         gofile_server = requests.get("https://api.gofile.io/servers").json()["data"]["servers"][0]["name"]
         r = requests.post(
             url = f"https://{gofile_server}.gofile.io/contents/uploadFile",
