@@ -152,7 +152,7 @@ async def config_schedule_message(ctx, arg):
         schedule_message = info_channel.last_message
         await schedule_message.edit(embed=embed)
     else:
-        await info.send("imagine being retarded")
+        await ctx.send("imagine being retarded")
 
 @bot.event
 async def on_ready():
