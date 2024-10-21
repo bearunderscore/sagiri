@@ -136,7 +136,7 @@ def get_schedule_embed():
     schedule_image_url = requests.post('https://catbox.moe/user/api.php', files={"reqtype": (None, "fileupload"), "fileToUpload": open("assets/schedule.png", "rb")}).text
     embed = discord.Embed(
         title = "Mei-Mei's current schedule!",
-        description = "If you would like an archive of all of Mei-Mei's past schedules, click [here](https://gofile.io/d/h158bY)!",
+        description = "Click [here](https://gofile.io/d/h158bY) for an archive of Mei-Mei's past schedules!",
         color = discord.Color.from_str("#fdf4f8")
     )
     embed.set_image(url=schedule_image_url)
