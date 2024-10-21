@@ -142,6 +142,7 @@ def get_schedule_embed():
     embed.set_image(url=schedule_image_url)
     return embed
 
+@commands.is_owner()
 @bot.command()
 async def config_schedule_message(ctx, arg):
     info_channel = bot.get_channel(INFO_CHANNEL)
