@@ -40,7 +40,7 @@ THRONE_USERNAME = os.getenv("THRONE_USERNAME")
 THRONE_CHANNEL = int(os.getenv("THRONE_CHANNEL"))
 
 ANNOUNCEMENT_CHANNEL = 1225137052165734513
-INFO_CHANNEL = int(os.getenv("INFOCHANNEL"))
+INFO_CHANNEL = int(os.getenv("INFO_CHANNEL"))
 MEIMEI_UID = 1197656323781836931
 
 CATBOX_TOKEN = os.getenv("CATBOX_TOKEN")
@@ -122,17 +122,17 @@ async def on_message(message):
             }
         )
 
-    # add schedule to #info
-    info_channel = bot.get_channel(INFO_CHANNEL)
-    schedule_message = info_channel.last_message
-    file = discord.File("assets/schedule.png", filename="schedule.png")
-    embed = discord.Embed(
-        name = "Mei-Mei's current schedule!",
-        description = "If you would like an archive of all of Mei-Mei's past schedules, click [here](https://gofile.io/d/h158bY)!",
-        color = discord.Color.from_str("#fdf4f8")
-    )
-    embed.set_image(url="attachment://schedule.png")
-    await schedule_message.edit(embed=embed)
+        # add schedule to #info
+        info_channel = bot.get_channel(INFO_CHANNEL)
+        schedule_message = info_channel.last_message
+        file = discord.File("assets/schedule.png", filename="schedule.png")
+        embed = discord.Embed(
+            title = "Mei-Mei's current schedule!",
+            description = "If you would like an archive of all of Mei-Mei's past schedules, click [here](https://gofile.io/d/h158bY)!",
+            color = discord.Color.from_str("#fdf4f8")
+        )
+        embed.set_image(url="attachment://schedule.png")
+        await schedule_message.edit(embed=embed)
 
     if message.content.lower().startswith("suggestion"):
         await logSuggestion(message)
@@ -143,7 +143,7 @@ async def config_schedule_message(ctx, arg):
     info_channel = bot.get_channel(INFO_CHANNEL)
     file = discord.File("assets/schedule.png", filename="schedule.png")
     embed = discord.Embed(
-        name = "Mei-Mei's current schedule!",
+        title = "Mei-Mei's current schedule!",
         description = "If you would like an archive of all of Mei-Mei's past schedules, click [here](https://gofile.io/d/h158bY)!",
         color = discord.Color.from_str("#fdf4f8")
     )
