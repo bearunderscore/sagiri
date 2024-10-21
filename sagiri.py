@@ -124,7 +124,7 @@ async def on_message(message):
 
         # add schedule to #info
         info_channel = bot.get_channel(INFO_CHANNEL)
-        schedule_message = info_channel.fetch_message(info_channel.last_message_id)
+        schedule_message = await info_channel.fetch_message(info_channel.last_message_id)
         embed = get_schedule_embed()
         await schedule_message.edit(embed=embed)
 
@@ -150,7 +150,7 @@ async def config_schedule_message(ctx, arg):
     if arg == "send":
         await info_channel.send(embed=embed)
     elif arg == "edit":
-        schedule_message = info_channel.fetch_message(info_channel.last_message_id)
+        schedule_message = await info_channel.fetch_message(info_channel.last_message_id)
         await schedule_message.edit(embed=embed)
     else:
         await ctx.send("imagine being retarded")
