@@ -125,36 +125,34 @@ async def on_message(message):
         # add schedule to #info
         info_channel = bot.get_channel(INFO_CHANNEL)
         schedule_message = info_channel.last_message
-        file = discord.File("assets/schedule.png", filename="schedule.png")
-        embed = discord.Embed(
-            title = "Mei-Mei's current schedule!",
-            description = "If you would like an archive of all of Mei-Mei's past schedules, click [here](https://gofile.io/d/h158bY)!",
-            color = discord.Color.from_str("#fdf4f8")
-        )
-        embed.set_image(url="attachment://schedule.png")
+        embed = get_schedule_embed()
         await schedule_message.edit(embed=embed)
 
     if message.content.lower().startswith("suggestion"):
         await logSuggestion(message)
     await bot.process_commands(message)
 
-@bot.command()
-async def config_schedule_message(ctx, arg):
-    info_channel = bot.get_channel(INFO_CHANNEL)
-    file = discord.File("assets/schedule.png", filename="schedule.png")
+def get_schedule_embed():
+    schedule_image_url = requests.post('https://catbox.moe/user/api.php', files={"reqtype": (None, "fileupload"), "fileToUpload": open("assets/schedule.png", "rb")}).text
     embed = discord.Embed(
         title = "Mei-Mei's current schedule!",
         description = "If you would like an archive of all of Mei-Mei's past schedules, click [here](https://gofile.io/d/h158bY)!",
         color = discord.Color.from_str("#fdf4f8")
     )
-    embed.set_image(url="attachment://schedule.png")
+    embed.set_image(url=schedule_image_url)
+    return embed
+
+@bot.command()
+async def config_schedule_message(ctx, arg):
+    info_channel = bot.get_channel(INFO_CHANNEL)
+    embed = get_schedule_embed()
     if arg == "send":
         await info_channel.send(embed=embed)
     elif arg == "edit":
         schedule_message = info_channel.last_message
         await schedule_message.edit(embed=embed)
     else:
-        await ctx.send("imagine being retarded")
+        await info.send("imagine being retarded")
 
 @bot.event
 async def on_ready():
