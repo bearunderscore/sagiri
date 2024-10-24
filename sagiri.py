@@ -87,12 +87,11 @@ async def on_message(message):
         ).json()
         last_schedule_id = list(r["data"].keys())[0]
         last_schedule_updated_name = r["data"][last_schedule_id]["name"].replace(" ----- CURRENT SCHEDULE", "")
-
         # rename last schedule so it's no longer the current one
         r = requests.put(
             url = f"https://api.gofile.io/contents/{last_schedule_id}/update",
             headers = {
-                "Content-Type": "application/json",
+                "Content-Type": "image/png",
                 "Authorization": f"Bearer {GOFILE_API_TOKEN}"
             },
             json = {
@@ -102,7 +101,7 @@ async def on_message(message):
         )
         
         # https://stackoverflow.com/questions/20413843/is-there-any-kind-of-standard-for-representing-date-ranges
-        # upload new schedule
+        # upload new schedule to Schedules
         today = datetime.now()
         start_date = today.isoformat()
         end_date = today + datetime.timedelta(days = 6)
@@ -120,36 +119,54 @@ async def on_message(message):
             }
         )
 
+        # upload to Current Schedule folder
+        folder_id = "fb41471e-4e25-4ac0-b2ae-744aaec5be8f"
+        # get and remove previous schedule
+        r = requests.get(f"https://api.gofile.io/contents/{folder_id}", headers={"Authorization": f"Bearer {GOFILE_API_TOKEN}"})
+        previous_schedule_id = r["data"]["childrenIds"][0]
+        r = requests.delete('https://api.gofile.io/contents', headers={"Content-Type": "image/png", "Authorization": f"Bearer {GOFILE_API_TOKEN}"}, json={"contentsId": previous_schedule_id})
+
+        # upload to folder
+        r = requests.post(
+            url = f"https://{gofile_server}.gofile.io/contents/uploadFile",
+            data = {
+                "token": GOFILE_API_TOKEN
+            },
+            files = {
+                "file": (date_range_string, open("assets/schedule.png", "rb"), "text/plain"),
+                "folderId": (None, folder_id)
+            }
+        )
+
         # add schedule to #info
         info_channel = bot.get_channel(INFO_CHANNEL)
-        schedule_message = info_channel.last_message
-        file = discord.File("assets/schedule.png", filename="schedule.png")
-        embed = discord.Embed(
-            name = "Mei-Mei's current schedule!",
-            description = "If you would like an archive of all of Mei-Mei's past schedules, click [here](https://gofile.io/d/h158bY)!",
-            color = discord.Color.from_str("#fdf4f8")
-        )
-        embed.set_image(url="attachment://schedule.png")
+        schedule_message = await info_channel.fetch_message(info_channel.last_message_id)
+        embed = get_schedule_embed()
         await schedule_message.edit(embed=embed)
 
     if message.content.lower().startswith("suggestion"):
         await logSuggestion(message)
     await bot.process_commands(message)
 
+def get_schedule_embed():
+    schedule_image_url = requests.post('https://catbox.moe/user/api.php', files={"reqtype": (None, "fileupload"), "fileToUpload": open("assets/schedule.png", "rb")}).text
+    embed = discord.Embed(
+        title = "Mei-Mei's current schedule!",
+        description = "Click [here](https://gofile.io/d/h158bY) for an archive of Mei-Mei's past schedules!",
+        color = discord.Color.from_str("#fdf4f8")
+    )
+    embed.set_image(url=schedule_image_url)
+    return embed
+
+@commands.is_owner()
 @bot.command()
 async def config_schedule_message(ctx, arg):
     info_channel = bot.get_channel(INFO_CHANNEL)
-    file = discord.File("assets/schedule.png", filename="schedule.png")
-    embed = discord.Embed(
-        name = "Mei-Mei's current schedule!",
-        description = "If you would like an archive of all of Mei-Mei's past schedules, click [here](https://gofile.io/d/h158bY)!",
-        color = discord.Color.from_str("#fdf4f8")
-    )
-    embed.set_image(url="attachment://schedule.png")
+    embed = get_schedule_embed()
     if arg == "send":
         await info_channel.send(embed=embed)
     elif arg == "edit":
-        schedule_message = info_channel.last_message
+        schedule_message = await info_channel.fetch_message(info_channel.last_message_id)
         await schedule_message.edit(embed=embed)
     else:
         await ctx.send("imagine being retarded")
