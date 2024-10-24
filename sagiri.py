@@ -40,7 +40,7 @@ THRONE_USERNAME = os.getenv("THRONE_USERNAME")
 THRONE_CHANNEL = int(os.getenv("THRONE_CHANNEL"))
 
 ANNOUNCEMENT_CHANNEL = 1225137052165734513
-INFO_CHANNEL = int(os.getenv("INFO_CHANNEL"))
+INFO_CHANNEL = int(os.getenv("INFOCHANNEL"))
 MEIMEI_UID = 1197656323781836931
 
 CATBOX_TOKEN = os.getenv("CATBOX_TOKEN")
@@ -106,10 +106,7 @@ async def on_message(message):
         start_date = today.isoformat()
         end_date = today + datetime.timedelta(days = 6)
         end_date = end_date.isoformat()
-        # necessary because ISO calendar year can have 52 or 53 weeks
-        # dec 28 is always in the last iso week of the year 
-        total_weeks = datetime.date(today.year, 12, 28).isocalendar().week
-        date_range_string = f"{total_weeks - today.isocalendar().week}-{start_date}--{end_date}"
+        date_range_string = f"{start_date}--{end_date}"
         gofile_server = requests.get("https://api.gofile.io/servers").json()["data"]["servers"][0]["name"]
         r = requests.post(
             url = f"https://{gofile_server}.gofile.io/contents/uploadFile",
@@ -122,35 +119,36 @@ async def on_message(message):
             }
         )
 
-        # add schedule to #info
-        info_channel = bot.get_channel(INFO_CHANNEL)
-        schedule_message = await info_channel.fetch_message(info_channel.last_message_id)
-        embed = get_schedule_embed()
-        await schedule_message.edit(embed=embed)
+    # add schedule to #info
+    info_channel = bot.get_channel(INFO_CHANNEL)
+    schedule_message = info_channel.last_message
+    file = discord.File("assets/schedule.png", filename="schedule.png")
+    embed = discord.Embed(
+        name = "Mei-Mei's current schedule!",
+        description = "If you would like an archive of all of Mei-Mei's past schedules, click [here](https://gofile.io/d/h158bY)!",
+        color = discord.Color.from_str("#fdf4f8")
+    )
+    embed.set_image(url="attachment://schedule.png")
+    await schedule_message.edit(embed=embed)
 
     if message.content.lower().startswith("suggestion"):
         await logSuggestion(message)
     await bot.process_commands(message)
 
-def get_schedule_embed():
-    schedule_image_url = requests.post('https://catbox.moe/user/api.php', files={"reqtype": (None, "fileupload"), "fileToUpload": open("assets/schedule.png", "rb")}).text
-    embed = discord.Embed(
-        title = "Mei-Mei's current schedule!",
-        description = "Click [here](https://gofile.io/d/h158bY) for an archive of Mei-Mei's past schedules!",
-        color = discord.Color.from_str("#fdf4f8")
-    )
-    embed.set_image(url=schedule_image_url)
-    return embed
-
-@commands.is_owner()
 @bot.command()
 async def config_schedule_message(ctx, arg):
     info_channel = bot.get_channel(INFO_CHANNEL)
-    embed = get_schedule_embed()
+    file = discord.File("assets/schedule.png", filename="schedule.png")
+    embed = discord.Embed(
+        name = "Mei-Mei's current schedule!",
+        description = "If you would like an archive of all of Mei-Mei's past schedules, click [here](https://gofile.io/d/h158bY)!",
+        color = discord.Color.from_str("#fdf4f8")
+    )
+    embed.set_image(url="attachment://schedule.png")
     if arg == "send":
         await info_channel.send(embed=embed)
     elif arg == "edit":
-        schedule_message = await info_channel.fetch_message(info_channel.last_message_id)
+        schedule_message = info_channel.last_message
         await schedule_message.edit(embed=embed)
     else:
         await ctx.send("imagine being retarded")
