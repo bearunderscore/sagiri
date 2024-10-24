@@ -72,6 +72,7 @@ async def on_message(message):
     if message.channel.id == ANNOUNCEMENT_CHANNEL and message.author.id == MEIMEI_UID and "schedule" in message.content.lower() and len(message.attachments) > 0:
         await message.attachments[0].save(fp="assets/schedule.png")
         
+        # upload to schedule archive
         # get last schedule
         folder_id = "48487a25-3367-4759-8b0e-f14436f7e7c8"
         r = requests.get(
@@ -119,17 +120,17 @@ async def on_message(message):
             }
         )
 
-    # add schedule to #info
-    info_channel = bot.get_channel(INFO_CHANNEL)
-    schedule_message = info_channel.last_message
-    file = discord.File("assets/schedule.png", filename="schedule.png")
-    embed = discord.Embed(
-        name = "Mei-Mei's current schedule!",
-        description = "If you would like an archive of all of Mei-Mei's past schedules, click [here](https://gofile.io/d/h158bY)!",
-        color = discord.Color.from_str("#fdf4f8")
-    )
-    embed.set_image(url="attachment://schedule.png")
-    await schedule_message.edit(embed=embed)
+        # add schedule to #info
+        info_channel = bot.get_channel(INFO_CHANNEL)
+        schedule_message = info_channel.last_message
+        file = discord.File("assets/schedule.png", filename="schedule.png")
+        embed = discord.Embed(
+            name = "Mei-Mei's current schedule!",
+            description = "If you would like an archive of all of Mei-Mei's past schedules, click [here](https://gofile.io/d/h158bY)!",
+            color = discord.Color.from_str("#fdf4f8")
+        )
+        embed.set_image(url="attachment://schedule.png")
+        await schedule_message.edit(embed=embed)
 
     if message.content.lower().startswith("suggestion"):
         await logSuggestion(message)
