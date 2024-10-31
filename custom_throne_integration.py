@@ -3,6 +3,8 @@ import re as regex
 from dateutil import parser
 from datetime import datetime
 import time
+import logging
+import traceback
 
 startAlert = "\"overlayInformation\":"
 startWishlist = "\"paymentConfiguration\":"
@@ -11,6 +13,24 @@ fieldValue1 = "\s*\"stringValue\":\s*\"(.*)\"$"
 fieldValue2 = "\s*\"integerValue\":\s*\"(.*)\"$"
 fieldValue3 = "\s*\"doubleValue\":\s*(.*)$"
 createTime = "\"createTime\":\s*\"([^\"]+)\""
+
+# create logger
+logger = logging.getLogger('my_logger')
+logger.setLevel(logging.DEBUG)
+
+# create console handler and set level to debug
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+
+# create formatter
+formatter = logging.Formatter(fmt='%(asctime)s %(levelname)-8s %(message)s',
+                              datefmt='%Y-%m-%d %H:%M:%S')
+
+# add formatter to ch
+ch.setFormatter(formatter)
+
+# add ch to logger
+logger.addHandler(ch)
 
 def getData(throneId, contributionCallback, giftCallback, wishlistCallback, buildId, userId, username):
     r = requests.post("https://firestore.googleapis.com/google.firestore.v1.Firestore/Listen/channel?VER=8&database=projects%2Fonlywish-9d17b%2Fdatabases%2F(default)&RID=86337&CVER=22&X-HTTP-Session-Id=gsessionid&zx=pwfobapf7prw&t=1", data="headers=X-Goog-Api-Client%3Agl-js%2F%20fire%2F9.13.0%0D%0AContent-Type%3Atext%2Fplain%0D%0AX-Firebase-GMPID%3A1%3A889136776977%3Aweb%3Accd737342a13c67cc3aeb0%0D%0A&count=3&ofs=0&req0___data__=%7B%22database%22%3A%22projects%2Fonlywish-9d17b%2Fdatabases%2F(default)%22%2C%22addTarget%22%3A%7B%22query%22%3A%7B%22structuredQuery%22%3A%7B%22from%22%3A%5B%7B%22collectionId%22%3A%22wishlistItems%22%7D%5D%2C%22orderBy%22%3A%5B%7B%22field%22%3A%7B%22fieldPath%22%3A%22__name__%22%7D%2C%22direction%22%3A%22ASCENDING%22%7D%5D%7D%2C%22parent%22%3A%22projects%2Fonlywish-9d17b%2Fdatabases%2F(default)%2Fdocuments%2Fcreators%2F" + throneId + "%22%7D%2C%22targetId%22%3A2%7D%7D&req1___data__=%7B%22database%22%3A%22projects%2Fonlywish-9d17b%2Fdatabases%2F(default)%22%2C%22addTarget%22%3A%7B%22documents%22%3A%7B%22documents%22%3A%5B%22projects%2Fonlywish-9d17b%2Fdatabases%2F(default)%2Fdocuments%2Fintegrations%2F" + throneId + "%2FprovidersPublic%2Fstream-alerts-browser-source%22%5D%7D%2C%22targetId%22%3A6%7D%7D&req2___data__=%7B%22database%22%3A%22projects%2Fonlywish-9d17b%2Fdatabases%2F(default)%22%2C%22addTarget%22%3A%7B%22query%22%3A%7B%22structuredQuery%22%3A%7B%22from%22%3A%5B%7B%22collectionId%22%3A%22overlays%22%7D%5D%2C%22where%22%3A%7B%22fieldFilter%22%3A%7B%22field%22%3A%7B%22fieldPath%22%3A%22creatorId%22%7D%2C%22op%22%3A%22EQUAL%22%2C%22value%22%3A%7B%22stringValue%22%3A%22" + throneId + "%22%7D%7D%7D%2C%22orderBy%22%3A%5B%7B%22field%22%3A%7B%22fieldPath%22%3A%22createdAt%22%7D%2C%22direction%22%3A%22DESCENDING%22%7D%2C%7B%22field%22%3A%7B%22fieldPath%22%3A%22__name__%22%7D%2C%22direction%22%3A%22DESCENDING%22%7D%5D%2C%22limit%22%3A1%7D%2C%22parent%22%3A%22projects%2Fonlywish-9d17b%2Fdatabases%2F(default)%2Fdocuments%22%7D%2C%22targetId%22%3A10%7D%7D")
@@ -136,25 +156,30 @@ def watchThrone(username, contributionCallback, giftCallback, wishlistCallback):
     delay = 0
     while True:
         try:
+            logger.info("about to fetch throne data")
             getData(userId, contributionCallback, giftCallback, wishlistCallback, buildId, userId, username)
+            logger.info("successfully got throne data")
             delay = 0
         except Exception as e:
-            print(e)
+            logger.error(e)
+            logger.warning(traceback.format_exc())
             # retry with exponential backoff
             if delay == 0:
                 delay = 30
             else:
                 delay *= 2
         if delay > 0:
-            print("waiting", delay, "seconds before reconnecting to throne")
+            logger.warning(f"waiting {delay} seconds before reconnecting to throne")
             time.sleep(delay)
             try:
                 r = requests.get("https://throne.com/" + username)
                 buildId2 = regex.search("\"buildId\":\s*\"([^\"]+)\"", r.text).group(1)
                 if buildId2 != buildId:
-                    print("udpating throne buildId", buildId2)
+                    logger.info("udpating throne buildId", buildId2)
                     buildId = buildId2
             except Exception as e:
-                print(e)
+                logger.error(e)
+                logger.warning(traceback.format_exc())
                 pass
+    logger.warning("stopping watching throne")
 
