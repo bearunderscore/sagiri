@@ -19,6 +19,7 @@ from google.oauth2 import service_account
 import datetime
 import urllib.parse
 import re as regex
+import traceback
 
 import custom_throne_integration
 
@@ -313,8 +314,10 @@ async def on_command_error(ctx, e):
     print(e)
 
 @bot.event
-async def on_error(e):
-    print(e)
+async def on_error(name, info):
+    print("error in", name)
+    print(info)
+    print(traceback.format_exc())
 
 async def logSuggestion(message):
     sheet = ""
