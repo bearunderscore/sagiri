@@ -41,7 +41,7 @@ THRONE_USERNAME = os.getenv("THRONE_USERNAME")
 THRONE_CHANNEL = int(os.getenv("THRONE_CHANNEL"))
 
 ANNOUNCEMENT_CHANNEL = 1225137052165734513
-INFO_CHANNEL = int(os.getenv("INFOCHANNEL"))
+INFO_CHANNEL = int(os.getenv("INFO_CHANNEL"))
 MEIMEI_UID = 1197656323781836931
 
 CATBOX_TOKEN = os.getenv("CATBOX_TOKEN")
@@ -79,7 +79,7 @@ async def on_message(message):
         r = requests.get(
             url = "https://api.gofile.io/contents/search",
             headers = {
-                "Authorization": f"Bearer {GOFILE_API_TOKEN}",
+                "Authorization": f"Bearer {GOFILE_API_TOKEN}"
             },
             params = {
                 "contentId": folder_id,
