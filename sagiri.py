@@ -77,7 +77,7 @@ async def on_message(message):
         # https://stackoverflow.com/questions/20413843/is-there-any-kind-of-standard-for-representing-date-ranges
         # upload new schedule to Schedules
         folder_id = "48487a25-3367-4759-8b0e-f14436f7e7c8"
-        today = datetime.now()
+        today = datetime.datetime.now()
         start_date = today.isoformat()
         end_date = today + datetime.timedelta(days = 6)
         end_date = end_date.isoformat()
