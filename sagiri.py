@@ -77,10 +77,10 @@ async def on_message(message):
         # https://stackoverflow.com/questions/20413843/is-there-any-kind-of-standard-for-representing-date-ranges
         # upload new schedule to Schedules
         folder_id = "48487a25-3367-4759-8b0e-f14436f7e7c8"
-        today = datetime.datetime.now()
+        today = datetime.date.today()
         start_date = today.isoformat()
         end_date = today + datetime.timedelta(days = 6)
-        end_date = end_date.isoformat()
+        end_datchildrenIdse = end_date.isoformat()
         date_range_string = f"{start_date}--{end_date}"
         gofile_server = requests.get("https://api.gofile.io/servers").json()["data"]["servers"][0]["name"]
         r = requests.post(
@@ -98,7 +98,7 @@ async def on_message(message):
         folder_id = "fb41471e-4e25-4ac0-b2ae-744aaec5be8f"
         # get and remove previous schedule
         r = requests.get(f"https://api.gofile.io/contents/{folder_id}", headers={"Authorization": f"Bearer {GOFILE_API_TOKEN}"})
-        previous_schedule_id = r["data"]["childrenIds"][0]
+        previous_schedule_id = list(r.json()["data"]["children"])[0]
         r = requests.delete('https://api.gofile.io/contents', headers={"Content-Type": "image/png", "Authorization": f"Bearer {GOFILE_API_TOKEN}"}, json={"contentsId": previous_schedule_id})
 
         # upload to folder
