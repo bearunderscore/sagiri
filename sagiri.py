@@ -189,13 +189,13 @@ async def info(ctx):
         color=discord.Color.from_str("#fdf4f8"),
         title="Meimei's Links!",
         description=(
-            "[Pomf](https://pomf.tv/stream/meimeimei)\n"
+            "[Pomf](https://pomf.tv/stream/meimeich)\n"
             "[Throne](https://throne.com/meimeiva)\n"
             "[Soundgasm](https://soundgasm.net/u/meimeibear/)\n"
             "[Matrix](https://discord.com/channels/1225136839006879874/1225136839006879877/1257765920454217791)\n"
             "[VTuber Wiki](https://virtualyoutuber.fandom.com/wiki/Mei-Mei)\n"
             "[ATF Streamer Thread](https://www.allthefallen.moe/forum/index.php?threads/new-streamer-mei-mei-reporting-for-duty.64173/)\n"
-            "[VOD Archive](https://gofile.io/d/H11r46)\n"
+            "[VOD Archive](https://gofile.io/d/V6z4Bi)\n"
         )
     )
     embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/1197656323781836931/336c79e1cc8391166cb7db1d400895c9.png")
