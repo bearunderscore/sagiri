@@ -189,7 +189,7 @@ async def info(ctx):
         color=discord.Color.from_str("#fdf4f8"),
         title="Meimei's Links!",
         description=(
-            "[Pomf](https://pomf.tv/stream/meimeimei)\n"
+            "[Pomf](https://pomf.tv/stream/meimeich)\n"
             "[Throne](https://throne.com/meimeiva)\n"
             "[Soundgasm](https://soundgasm.net/u/meimeibear/)\n"
             "[Matrix](https://discord.com/channels/1225136839006879874/1225136839006879877/1257765920454217791)\n"
