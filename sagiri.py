@@ -510,5 +510,49 @@ async def uploadImageToCatbox(attachment, name, includeName):
         print(e)
         return None
 
+@commands.has_any_role(1225149408593838180, 1225328554624024667)
+@bot.command()
+async def removeAllMessages(ctx, user: discord.member.Member):
+    allChannels = []
+    found = 0
+    searched = 0
+    errors = 0
+    for channel in await ctx.guild.fetch_channels():
+        if hasattr(channel, "history"):
+            allChannels.append(channel)
+        if hasattr(channel, "archived_threads"):
+            async for thread in channel.archived_threads():
+                allChannels.append(thread)
+        if hasattr(channel, "threads"):
+            for thread in channel.threads:
+                allChannels.append(thread)
+    await ctx.send(f"searching {len(allChannels)} channels/threads for messages by {str(user)}, this will take a while")
+    for channel in allChannels:
+        archived = hasattr(channel, "archived") and channel.archived
+        rearchive = False
+        async for message in channel.history(limit=None):
+            searched += 1
+            if message.author == user:
+                #print(str(channel) + ": " + message.content)
+                found += 1
+                try:
+                    if archived: # have to unarchive a thread to delete messages in it
+                        await channel.edit(archived=False)
+                        archived = False
+                        rearchive = True
+                    await message.delete()
+                except Exception as e:
+                    print(e)
+                    errors += 1
+            if searched % 20000 == 0:
+                if errors > 0:
+                    await ctx.send(f"deleted {found-errors} messages so far, got {errors} API errors (currently searching #{str(channel)})")
+                else:
+                    await ctx.send(f"deleted {found-errors} messages so far (currently searching #{str(channel)})")
+        if rearchive:
+            await channel.edit(archived=True)
+    print(found)
+    await ctx.send(f"done: deleted {found-errors} messages, got {errors} API errors")
+
 if __name__ == "__main__":
     asyncio.run(main())
