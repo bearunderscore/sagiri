@@ -96,7 +96,7 @@ def onWishlistUpdate(item, callback):
     #print(item)
     t = item["time"]
     if t <= lastTimeWishlist:
-        #print("skipping")
+        #logger.info(f"skipping wishlist with time {t} (last updated {lastTimeWishlist})")
         return
     lastTimeWishlist = t
     callback(item)
@@ -108,7 +108,7 @@ def onContribution(item, callback, buildId, userId):
     #print(item)
     t = item["time"]
     if t <= lastTimeContribution:
-        #print("skipping")
+        #logger.info(f"skipping contribution with time {t} (last updated {lastTimeContribution})")
         return
     lastTimeContribution = t
     callback(item)
@@ -146,6 +146,9 @@ def onGift(item, callback, buildId, userId, username):
         if gift["purchasedAt"] > lastTimeGift:
             callback(gift)
             t = max(t, gift["purchasedAt"])
+        else:
+            #logger.info(f"skipping gift with time {gift['purchasedAt']} (last updated {lastTimeGift})")
+            pass
     lastTimeGift = t
 
 def watchThrone(username, contributionCallback, giftCallback, wishlistCallback):
@@ -156,9 +159,9 @@ def watchThrone(username, contributionCallback, giftCallback, wishlistCallback):
     delay = 0
     while True:
         try:
-            logger.info("about to fetch throne data")
+            #logger.info("about to fetch throne data")
             getData(userId, contributionCallback, giftCallback, wishlistCallback, buildId, userId, username)
-            logger.info("successfully got throne data")
+            #logger.info("successfully got throne data")
             delay = 0
         except Exception as e:
             logger.error(e)
